@@ -19,5 +19,4 @@ struct PostComment:Decodable {
     let name:String
     let email:String
     let body:String
-    
 }

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Firebase
 class RegisterViewController: UIViewController {
     let registerAuthViewModel: AuthViewModel = AuthViewModel()
     @IBOutlet weak var emailTextfield: UITextField!
@@ -18,11 +17,11 @@ class RegisterViewController: UIViewController {
         navBar.tintColor = .black
     }
     @IBAction func registerPressed(_ sender: UIButton) {
-        self.registerAuthViewModel.email = emailTextfield.text
-        self.registerAuthViewModel.password = passwordTextfield.text
-        if registerAuthViewModel.email != "" && registerAuthViewModel.password != ""  {
+        registerAuthViewModel.email = emailTextfield.text
+        registerAuthViewModel.password = passwordTextfield.text
+        if  registerAuthViewModel.email != "" && registerAuthViewModel.password != ""  {
             registerAuthViewModel.registerUser()
-          performSegue(withIdentifier: "registerToDashboard", sender: self)
+            performSegue(withIdentifier: K.NavigationId.registerSegue, sender: self)
         } else {
             displayAlert(withTitle: "Error", message: "Please, enter your email and password")
         }

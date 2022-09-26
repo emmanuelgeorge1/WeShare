@@ -12,7 +12,7 @@ class DetailedViewController: UIViewController,UITableViewDelegate,UITableViewDa
     var comment = [PostComment]()
     private var tableView: UITableView = {
         let table = UITableView()
-        table.register(PostCommentTableViewCell.nib(), forCellReuseIdentifier: PostCommentTableViewCell.identifier)
+        table.register(PostCommentTableViewCell.nib(), forCellReuseIdentifier: K.postCommentCellID)
         return table
     }()
     override func viewDidLoad() {
@@ -46,16 +46,16 @@ class DetailedViewController: UIViewController,UITableViewDelegate,UITableViewDa
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.row > 0 {
-            let cell = tableView.dequeueReusableCell(withIdentifier: PostCommentTableViewCell.identifier, for: indexPath) as! PostCommentTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: K.postCommentCellID, for: indexPath) as! PostCommentTableViewCell
             let data = sortingData(array:comment)[indexPath.row]
             cell.nameLabel.text = data.name
             cell.emailLabel.text = data.email
             cell.commentLabel.text = data.body
             return cell
         }
-        var cell = tableView.dequeueReusableCell(withIdentifier: PostTableViewCell.identifier)
+        var cell = tableView.dequeueReusableCell(withIdentifier: K.detailedCellId)
         if cell == nil {
-            cell = UITableViewCell(style: .subtitle, reuseIdentifier: PostTableViewCell.identifier)
+            cell = UITableViewCell(style: .subtitle, reuseIdentifier: K.detailedCellId)
             cell?.textLabel?.font = UIFont.systemFont(ofSize: 30.0, weight: .bold)
             cell?.detailTextLabel?.font = UIFont.systemFont(ofSize: 18.0)
             cell?.textLabel?.numberOfLines = 0

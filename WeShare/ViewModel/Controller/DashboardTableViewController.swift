@@ -6,16 +6,15 @@
 //
 import UIKit
 import SwipeCellKit
-import Firebase
+
 class DashboardTableViewController: UITableViewController,SwipeTableViewCellDelegate {
+    var posts = [PostData]()
     var postTitle = ""
     var postBody = ""
-    var posts = [PostData]()
     var roundButton = UIButton()
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchPosts()
-        navigationItem.hidesBackButton = true
         roundButton.addTarget(self, action: #selector(buttonTaped), for: .touchUpInside)
     }
     override func viewDidLayoutSubviews() {
@@ -25,7 +24,7 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
         roundButton.tintColor = .white
         roundButton.layer.shadowRadius = 10
         roundButton.layer.shadowOpacity = 0.4
-        let image = UIImage(systemName: "square.and.pencil",withConfiguration: UIImage.SymbolConfiguration(pointSize: 32, weight: .medium ))
+        let image = UIImage(systemName: K.ImageName.postButtonIcon,withConfiguration: UIImage.SymbolConfiguration(pointSize: 32, weight: .medium ))
         roundButton.setImage(image, for: .normal)
         roundButton.translatesAutoresizingMaskIntoConstraints = false
         navigationController?.view.addSubview(roundButton)
@@ -42,8 +41,8 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
             self.roundButton.removeFromSuperview()
         }
     }
-     func fetchPosts(){
-         RestServices.shared.fetchPosts { (res) in
+    func fetchPosts(){
+        RestServices.shared.fetchPosts { (res) in
             switch res {
             case .failure(let err):
                 print("Failed to fetch post:",err)
@@ -55,28 +54,21 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
     }
     @objc private func buttonTaped(){
         print("button pressed")
-        let alert = UIAlertController(title: "Title", message: "Message", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Title of the Post", message: "Message", preferredStyle: .alert)
         alert.addTextField { (textField) in
-            textField.placeholder = "Post title"
+            textField.placeholder = "Title of the Post"
         }
-        
         alert.addTextField { (textField) in
-            textField.placeholder = "Post message"
+            textField.placeholder = "Body of the message"
         }
-        
         alert.addAction(UIAlertAction(title: "Post", style: .cancel, handler: { [weak alert] (_) in
             if let textField = alert?.textFields?[0], let userText = textField.text {
                 self.postTitle = userText
             }
-            
             if let textField = alert?.textFields?[0], let userText = textField.text {
                 self.postBody = userText
             }
-            let title = self.postTitle
-            let body = self.postBody
-            print("Post title text 1: \(title)")
-            print("Post body text 2: \(body)")
-            RestServices.shared.createPost(title: title, body:body ) { err in
+            RestServices.shared.createPost(title: self.postTitle, body:self.postBody ) { err in
                 if let err = err{
                     print("Falied to create cell \(err)")
                 }
@@ -95,9 +87,7 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
     override func viewWillAppear(_ animated: Bool) {
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 150, height: 50))
         label.font = UIFont.boldSystemFont(ofSize: 30)
-        label.text = "WeShare"
-        label.numberOfLines = 0
-        label.sizeToFit()
+        label.text = K.appName
         label.textAlignment = .center
         self.navigationItem.titleView = label
     }
@@ -107,7 +97,7 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
         return  posts.count
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! SwipeTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: K.dashboardCellId, for: indexPath) as! SwipeTableViewCell
         cell.delegate = self
         let post = posts[indexPath.row]
         cell.textLabel?.text = post.title.capitalized
@@ -131,11 +121,11 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
             self.tableView.deleteRows(at: [indexPath], with: .automatic)
         }
         // customize the action appearance
-        deleteAction.image = UIImage(systemName: "trash.fill")
+        deleteAction.image = UIImage(systemName: K.ImageName.deleteIcon)
         return [deleteAction]
     }
     override  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "showDetails", sender: self)
+        performSegue(withIdentifier: K.NavigationId.detailedTableSegue, sender: self)
     }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let destination = segue.destination as? DetailedViewController {
@@ -148,14 +138,8 @@ class DashboardTableViewController: UITableViewController,SwipeTableViewCellDele
     func displayAlert(withTitle title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let logout = UIAlertAction(title: "Yes", style: .destructive) { (action: UIAlertAction!) in
-            do {
-                try Auth.auth().signOut()
+            AuthViewModel.shared.logOut()
                 self.navigationController?.popToRootViewController(animated: true)
-                UserDefaults.standard.set(false, forKey: "isUserLoggedIn")
-                UserDefaults.standard.synchronize()
-            } catch let signOutError as NSError {
-                print("Error signing out: %@", signOutError)
-            }
         }
         let cancel = UIAlertAction(title:"No", style: .cancel) { (action: UIAlertAction!) in
             alert.dismiss(animated: true, completion: nil)
